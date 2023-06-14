@@ -18,13 +18,15 @@ FetchContent_MakeAvailable(nlohmann_json)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(HIREDIS REQUIRED hiredis)
 
+find_package(Threads REQUIRED)
+
 # Include hiredis headers
 include_directories(${HIREDIS_INCLUDE_DIRS})
 
 # Add your main.cpp file
-add_executable(MyProject main.cpp)
+add_executable(MyProject thread_getset.cpp)
 
 target_compile_options(MyProject PUBLIC ${HIREDIS_CFLAGS})
 
 # Link against the hiredis library
-target_link_libraries(MyProject ${HIREDIS_LIBRARIES} nlohmann_json::nlohmann_json)
+target_link_libraries(MyProject ${HIREDIS_LIBRARIES} nlohmann_json::nlohmann_json Threads::Threads)
