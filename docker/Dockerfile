@@ -14,4 +14,5 @@ RUN apt-get update && apt-get install -y \
     cmake \
     pkg-config \
     silversearcher-ag \
-    git
+    git \
+    libopencv-dev

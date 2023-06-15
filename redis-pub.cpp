@@ -1,6 +1,8 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <fstream>
+#include <vector>
 #include <hiredis/hiredis.h>
 
 using namespace std::literals;
@@ -9,27 +11,52 @@ void producerThread(redisContext* redis) {
     std::this_thread::sleep_for(std::chrono::seconds(1)); // Wait for the consumer thread to start first
 
     const char* channel = "channel_name";
-    const char* messages[] = { "Message 1", "Message 2", "Message 3" };
-    const int numMessages = sizeof(messages) / sizeof(messages[0]);
+    const char* image_path = "eo.jpg";
 
-    while (true)
-    {
-        for (int i = 0; i < numMessages; ++i) {
-            std::this_thread::sleep_for(std::chrono::seconds(1)); // Send a message every second
-
-            // Publish message
-            redisReply* reply = (redisReply*)redisCommand(redis, "PUBLISH %s %s", channel, messages[i]);
-            if (reply == nullptr || reply->type == REDIS_REPLY_ERROR) {
-                std::cout << "Failed to publish message: " << (reply == nullptr ? "Memory allocation failed" : reply->str) << std::endl;
-                return;
-            }
-
-            std::cout <<
-            freeReplyObject(reply);
-        }
+    std::ifstream file(image_path, std::ios::binary);
+    if (!file) {
+        std::cout << "Failed to open file: " << image_path << std::endl;
+        return;
     }
-    
-    
+
+    std::chrono::high_resolution_clock::time_point startTime, endTime;
+
+    while (true) {
+
+        startTime = std::chrono::high_resolution_clock::now();
+
+        // Determine the file size
+        // 파일 포인터를 파일 끝으로 이동하여 파일 크기를 결정할 수 있다
+        file.seekg(0, std::ios::end);
+        // 파일의 끝 위치에서의 오프셋 반환
+        std::streamsize file_size = file.tellg();
+        // 파일 포인터를 처음으로 이동시킴
+        file.seekg(0, std::ios::beg);
+
+        // Allocate a buffer to hold the file data
+        std::vector<char> buffer(file_size);
+
+        // Read the file data into the buffer
+        file.read(buffer.data(), file_size);
+
+        // Publish message
+        redisReply* reply = (redisReply*)redisCommand(redis, "PUBLISH %s %b", channel, buffer.data(), file_size);
+        if (reply == nullptr || reply->type == REDIS_REPLY_ERROR) {
+            std::cout << "Failed to publish message for file: " << image_path << std::endl;
+        }
+
+        freeReplyObject(reply);
+
+        endTime = std::chrono::high_resolution_clock::now();
+        
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
+
+        std::cout << "Elapsed time: " << duration << " ms, File size: " << file_size << std::endl;
+
+        std::this_thread::sleep_for(1s);
+    }
+
+    file.close();
 }
 
 int main() {
