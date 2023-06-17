@@ -13,5 +13,5 @@ docker run \
 	-v /tmp/.X11-unix/:/tmp/.X11-unix \
 	-v $HOME/workspace/:/workspace/ \
 	-w /workspace \
-    --name my-redis-container \
-	my-redis-image
+        --name redis-container \
+	redis-image

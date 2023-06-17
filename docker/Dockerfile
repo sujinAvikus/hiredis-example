@@ -2,6 +2,9 @@
 
 FROM ubuntu:latest
 
+ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG C.UTF-8
+
 # Update package lists and install necessary packages
 RUN apt-get update && apt-get install -y \
     build-essential \

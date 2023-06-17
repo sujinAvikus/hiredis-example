@@ -21,9 +21,12 @@ pkg_check_modules(HIREDIS REQUIRED hiredis)
 find_package(OpenCV REQUIRED)
 find_package(Threads REQUIRED)
 
+pkg_check_modules(LIBEVENT REQUIRED libevent)
+
 # Include hiredis headers
 include_directories(${HIREDIS_INCLUDE_DIRS}
-                    ${OpenCV_INCLUDE_DIRS})
+                    ${OpenCV_INCLUDE_DIRS}
+                    ${LIBEVENT_INCLUDE_DIRS})
 
 # Add your main.cpp file
 add_executable(MyProject main.cpp)
@@ -37,6 +40,6 @@ add_executable(redis-pub redis-pub.cpp)
 target_compile_options(redis-pub PUBLIC ${HIREDIS_CFLAGS})
 target_link_libraries(redis-pub ${HIREDIS_LIBRARIES} ${OpenCV_LIBS} nlohmann_json::nlohmann_json Threads::Threads)
 
-add_executable(redis-sub redis-sub.cpp)
+add_executable(redis-sub redis-sub-async.cpp)
 target_compile_options(redis-sub PUBLIC ${HIREDIS_CFLAGS})
-target_link_libraries(redis-sub ${HIREDIS_LIBRARIES} ${OpenCV_LIBS} nlohmann_json::nlohmann_json Threads::Threads)
+target_link_libraries(redis-sub ${HIREDIS_LIBRARIES} ${OpenCV_LIBS} ${LIBEVENT_LIBRARIES} nlohmann_json::nlohmann_json Threads::Threads)
