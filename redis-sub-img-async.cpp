@@ -1,5 +1,4 @@
 #include <iostream>
-#include <string>
 #include <hiredis/async.h>
 #include <hiredis/adapters/libevent.h>
 #include <event2/event.h>
@@ -7,6 +6,9 @@
 #include <cstdio>
 #include <cstring>
 #include <thread>
+#include <vector>
+#include <string>
+#include <opencv2/opencv.hpp>
 
 // Event base for the event loop
 event_base* eventBase;
@@ -23,8 +25,22 @@ void handleMessage(redisAsyncContext* context, void* reply, void* privateData) {
 		if(strcmp(rp->element[0]->str, "subscribe") != 0){
             // std::cout << std::unitbuf;  // Set std::cout to be unbuffered
             // std::cout << "Received message: " << rp->element[2]->str << std::endl;
-			printf("Received [%s] channel %s: %s\n", (char*)privateData, rp->element[1]->str, rp->element[2]->str);
-		}
+			// printf("Received [%s] channel %s: %s\n", (char*)privateData, rp->element[1]->str, rp->element[2]->str);
+
+            std::vector<char> imageBytes(rp->element[2]->str, rp->element[2]->str + rp->element[2]->len);
+            // Decode the image bytes using OpenCV
+            cv::Mat image = cv::imdecode(imageBytes, cv::IMREAD_COLOR);
+            if (image.empty()) {
+                std::cout << "Failed to decode image" << std::endl;
+                return;
+            }
+
+            // Save the image as RGB JPG
+            std::string outputFilePath = "output.jpg";
+            cv::imwrite(outputFilePath, image);
+
+            std::cout << "Image saved as " << outputFilePath << std::endl;
+        }   
 	}
 }
 
