@@ -18,4 +18,5 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     silversearcher-ag \
     git \
-    libopencv-dev
+    libopencv-dev \
+    libevent-dev
