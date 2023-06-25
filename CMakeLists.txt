@@ -38,10 +38,14 @@ target_compile_options(MyProject PUBLIC ${HIREDIS_CFLAGS})
 # Link against the hiredis library
 target_link_libraries(MyProject ${HIREDIS_LIBRARIES} nlohmann_json::nlohmann_json Threads::Threads)
 
-add_executable(redis-pub redis-pub-img.cpp)
+add_executable(redis-pub redis-pub-video.cpp)
 target_compile_options(redis-pub PUBLIC ${HIREDIS_CFLAGS})
 target_link_libraries(redis-pub ${HIREDIS_LIBRARIES} ${OpenCV_LIBS} nlohmann_json::nlohmann_json Threads::Threads)
 
-add_executable(redis-sub redis-sub-img-async.cpp)
+add_executable(redis-sub redis-sub-video-async.cpp)
 target_compile_options(redis-sub PUBLIC ${HIREDIS_CFLAGS})
 target_link_libraries(redis-sub ${HIREDIS_LIBRARIES} ${OpenCV_LIBS} ${LIBEVENT_LIBRARIES} nlohmann_json::nlohmann_json Threads::Threads)
+
+INSTALL(FILES sample.jpg eo.jpg race.mp4 kids.mp4
+	DESTINATION ${CMAKE_BINARY_DIR}
+)
