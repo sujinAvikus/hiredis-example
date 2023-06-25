@@ -4,6 +4,7 @@
 #include <fstream>
 #include <vector>
 #include <hiredis/hiredis.h>
+#include <opencv2/opencv.hpp>
 
 using namespace std::literals;
 
@@ -38,6 +39,12 @@ void producerThread(redisContext* redis) {
 
         // Read the file data into the buffer
         file.read(buffer.data(), file_size);
+ 
+        cv::Mat frame;
+        frame = cv::imread(image_path, cv::IMREAD_COLOR);
+        
+        std::cout << "file_size: " << file_size << std::endl;
+        std::cout << "Frame size: " << frame.total() << std::endl;
 
         // Publish message
         redisReply* reply = (redisReply*)redisCommand(redis, "PUBLISH %s %b", channel, buffer.data(), file_size);
@@ -45,6 +52,16 @@ void producerThread(redisContext* redis) {
             std::cout << "Failed to publish message for file: " << image_path << std::endl;
         }
 
+        cv::Mat image = cv::imdecode(buffer, cv::IMREAD_COLOR);
+        if (image.empty()) {
+            std::cout << "Failed to decode image" << std::endl;
+            return;
+        }
+
+        // Save the image as RGB JPG
+        std::string outputFilePath = "output.jpg";
+        cv::imwrite(outputFilePath, image);
+        
         freeReplyObject(reply);
 
         endTime = std::chrono::high_resolution_clock::now();
