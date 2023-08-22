@@ -11,10 +11,14 @@ using namespace std::literals;
 void producerThread(redisContext* redis) {
     std::this_thread::sleep_for(std::chrono::seconds(1)); // Wait for the consumer thread to start first
 
-    const char* channel = "channel_name";
-    const char* video_path = "kids.mp4";
+    const char* channel = "frame:ir";
+    const char* video_path = "/workspace/detector-app/data/video/ir_hannara.mp4";
+    const char* img_path = "/workspace/hiredis-example/temp.jpg";
 
     cv::VideoCapture video(video_path);
+    cv::Mat img = cv::imread(img_path);
+
+
     if (!video.isOpened()) {
         std::cout << "Failed to open video file: " << video_path << std::endl;
         return;
@@ -44,7 +48,9 @@ void producerThread(redisContext* redis) {
         std::cout << "Frame channels: " << frame.channels() << std::endl;
 
         std::vector<uchar> buffer;
-        cv::imencode(".jpg", frame, buffer);
+        // cv::imencode(".jpg", frame, buffer);
+        cv::imencode(".jpg", img, buffer);
+        
 
         // ERROR
         // std::vector<char> buffer(frame.data, frame.data + frame.total());
@@ -57,6 +63,10 @@ void producerThread(redisContext* redis) {
         std::cout << "buffer size: " << buffer.size() << std::endl;
 
         // Publish message
+        // redisReply* reply = (redisReply*)redisCommand(redis, "PUBLISH %s %b", channel, buffer.data(), buffer.size());
+        // if (reply == nullptr || reply->type == REDIS_REPLY_ERROR) {
+        //     std::cout << "Failed to publish message" << std::endl;
+        // }
         redisReply* reply = (redisReply*)redisCommand(redis, "PUBLISH %s %b", channel, buffer.data(), buffer.size());
         if (reply == nullptr || reply->type == REDIS_REPLY_ERROR) {
             std::cout << "Failed to publish message" << std::endl;
