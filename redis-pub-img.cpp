@@ -37,6 +37,7 @@ void producerThread(redisContext* redis) {
             return;
         }
 
+
         startTime = std::chrono::high_resolution_clock::now();
 
         // Determine the file size
